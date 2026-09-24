@@ -2,7 +2,7 @@
 
 Clac is a lightweight, high-performance online utility tool designed for quick daily calculations and data processing. Built with modern web technologies, it provides a clean, distraction-free user experience with instant client-side processing.
 
-🔗 **Live Demo**: [https://clac.qtool.io/](https://clac.qtool.io/)
+🔗 **Live Demo**: [https://calc.qtool.io/](https://calc.qtool.io/)
 
 ## ✨ Features
 
