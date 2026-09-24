@@ -1,0 +1,704 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scientific Calculator — Online Calculator with Keyboard & History</title>
+<meta name="description" content="Online scientific calculator with trigonometric functions, logarithms, exponents, and calculation history. Use keyboard or mouse.">
+<meta name="keywords" content="scientific calculator, online calculator, math calculator, trigonometry, logarithm">
+<meta property="og:title" content="Scientific Calculator | calc.qtool.io">
+<meta property="og:description" content="Online scientific calculator. Trigonometric, logarithmic, exponential functions. Keyboard support and calculation history.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://calc.qtool.io">
+<link rel="canonical" href="https://calc.qtool.io">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Scientific Calculator","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","description":"Online scientific calculator with trigonometric, logarithmic, and exponential functions and calculation history."}</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Can I use my keyboard with this calculator?","acceptedAnswer":{"@type":"Answer","text":"Yes! Use number keys, operators (+, -, *, /), Enter for equals, Backspace to delete, Esc to clear, S for sin, C for cos, T for tan, L for ln."}},
+{"@type":"Question","name":"Does the calculator keep a history?","acceptedAnswer":{"@type":"Answer","text":"Yes, your last 20 calculations are shown below the keypad."}},
+{"@type":"Question","name":"Is my calculation data private?","acceptedAnswer":{"@type":"Answer","text":"All calculations happen locally in your browser. No data is sent to any server."}},
+{"@type":"Question","name":"What is the difference between Deg and Rad mode?","acceptedAnswer":{"@type":"Answer","text":"Deg mode uses degrees (0-360) for trig functions. Rad mode uses radians (0-2π). Choose based on your angle unit."}}
+]}
+</script>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#050508;--surface:#111118;--surface2:#1a1a24;--border:#252533;--primary:#00d4ff;--accent:#a855f7;--pink:#ec4899;--text:#e2e8f0;--text2:#94a3b8;--radius:12px;--glass:rgba(17,17,24,.7)}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--primary);text-decoration:none}
+/* NAV */
+.qtool-nav{position:sticky;top:0;z-index:1000;background:rgba(3,3,3,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08)}
+.qtool-nav-inner{max-width:1200px;margin:0 auto;padding:0 22px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.qtool-logo{font-weight:700;font-size:1.3rem;color:#fff;text-decoration:none;display:flex;align-items:center;white-space:nowrap}
+.qtool-logo span{background:linear-gradient(135deg,#635bff,#00d4ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.qtool-burger{display:none;background:none;border:1px solid rgba(255,255,255,.15);color:#fff;font-size:1.15rem;width:42px;height:38px;border-radius:8px;cursor:pointer;line-height:1}
+.qtool-links{display:flex;align-items:center;gap:24px}
+.qtool-links a{color:#cbd5e1;text-decoration:none;font-size:.92rem;font-weight:500;transition:color .25s;white-space:nowrap}
+.qtool-links a:hover{color:#00d4ff}
+@media(max-width:820px){
+.qtool-burger{display:block}
+.qtool-nav-inner{position:relative}
+.qtool-links{display:none;position:absolute;top:64px;left:0;right:0;background:#0b0b12;flex-direction:column;align-items:flex-start;padding:20px 22px 24px;gap:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.qtool-links.open{display:flex}
+}
+/* HERO */
+.hero{text-align:center;padding:1.6rem 1.5rem 1.2rem}
+.hero h1{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;margin-bottom:.35rem;background:linear-gradient(135deg,#fff,var(--primary),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);font-size:.95rem;max-width:600px;margin:0 auto}
+/* LAYOUT */
+.tool-wrap{max-width:800px;margin:0 auto;padding:0 1.5rem 3rem}
+.card{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;transition:opacity .5s,transform .5s;opacity:0;transform:translateY(20px)}
+.card.visible{opacity:1;transform:translateY(0)}
+.card h3{font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.card h3 span{font-size:1.1rem}
+/* CALC DISPLAY */
+#sciPut{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:1rem}
+#sciInPut{font-size:.95rem;color:var(--text2);min-height:1.4em;text-align:right;overflow-x:auto;white-space:nowrap;opacity:.6}
+#sciOutPut{font-size:2.5rem;font-weight:800;color:var(--text);text-align:right;background:transparent;border:none;line-height:1.2;word-break:break-all}
+/* CALC BUTTONS */
+.calc-stand,.calc-sci{margin-bottom:.5rem}
+.calc-stand div,.calc-sci div{display:flex;gap:6px;margin-bottom:6px}
+.scinm,.sciop,.scifunc,.scieq{display:flex;align-items:center;justify-content:center;height:48px;border-radius:10px;font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;user-select:none;flex:1}
+.scinm{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.scinm:hover{background:#252538;border-color:#353550}
+.scinm:active{transform:scale(.95);background:#2a2a40}
+.sciop{background:rgba(0,212,255,.08);color:var(--primary);border:1px solid rgba(0,212,255,.15)}
+.sciop:hover{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.3)}
+.sciop:active{transform:scale(.95)}
+.scifunc{background:rgba(168,85,247,.08);color:var(--accent);border:1px solid rgba(168,85,247,.15)}
+.scifunc:hover{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.3)}
+.scifunc:active{transform:scale(.95)}
+.scieq{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border:none}
+.scieq:hover{opacity:.85}
+.scieq:active{transform:scale(.95)}
+.calc-key-ac{background:linear-gradient(135deg,#ff6b35,#ff4757)!important;color:#fff!important;border:none!important}
+.calc-key-ac:hover{opacity:.85}
+/* DEG/RAD */
+.scird{display:inline-flex;align-items:center;background:var(--surface2);border-radius:10px;padding:0 8px;border:1px solid var(--border);flex:2;justify-content:center;gap:4px}
+.scird label{cursor:pointer;margin:0;display:inline-flex;align-items:center}
+.scird input[type="radio"]{appearance:none;-webkit-appearance:none;opacity:0;outline:none;position:absolute;left:0;top:0;z-index:-1}
+.scird input[type="radio"]:checked+b{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border-radius:6px;padding:2px 12px}
+.scird b{color:var(--text2);font-size:.8rem;padding:2px 8px;transition:all .2s}
+/* HISTORY */
+.scihistorybox{margin:.7rem 0 1rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.6rem .9rem}
+.scihistorytitle{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--text2);font-size:.72rem;margin-bottom:.3rem}
+.scihistorytitle h3{display:inline-block;margin:0;color:var(--text);font-size:.85rem;font-weight:700}
+#scihistory{clear:both}
+#scihistory,#scihistory div{font-size:.85rem;color:var(--text2);text-align:right;overflow:hidden;width:auto}
+#scihistory div{border-top:1px solid var(--border);padding-top:5px;margin-bottom:5px}
+/* KEY REF */
+.key-ref{font-size:.88rem;color:var(--text2);line-height:1.8}
+.key-ref strong{color:var(--primary);font-weight:600}
+/* FAQ */
+.faq-section{max-width:800px;margin:0 auto;padding:2rem 1.5rem 3rem}
+.faq-section h2{font-size:1.5rem;font-weight:800;text-align:center;margin-bottom:1.5rem}
+.faq-item{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.8rem;overflow:hidden}
+.faq-q{padding:1rem 1.2rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.95rem;transition:background .2s}
+.faq-q:hover{background:rgba(255,255,255,.03)}
+.faq-q::after{content:"+";font-size:1.3rem;color:var(--primary);transition:transform .3s;flex-shrink:0;margin-left:1rem}
+.faq-item.open .faq-q::after{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s;padding:0 1.2rem;color:var(--text2);font-size:.9rem;line-height:1.7}
+.faq-item.open .faq-a{max-height:300px;padding:0 1.2rem 1rem}
+/* CTA */
+.cta-section{text-align:center;padding:4rem 1.5rem;margin-top:2rem}
+.cta-section h2{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;margin-bottom:.8rem}
+.cta-section p{color:var(--text2);margin-bottom:1.5rem;font-size:1rem}
+.cta-btn{display:inline-block;background:linear-gradient(135deg,var(--primary),var(--accent),var(--pink));padding:.8rem 2rem;border-radius:10px;color:#fff;font-weight:700;font-size:1rem;transition:transform .2s,box-shadow .2s}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,212,255,.3)}
+/* RELATED TOOLS */
+.related-tools{max-width:960px;margin:0 auto;padding:0 1.5rem 2.5rem}
+.rt-title{font-size:1.3rem;font-weight:700;margin-bottom:1rem}
+.rt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.8rem}
+.rt-card{display:flex;align-items:flex-start;gap:.7rem;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:.85rem 1rem;text-decoration:none;transition:border-color .2s,transform .2s}
+.rt-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+.rt-ico{font-size:1.25rem;line-height:1.5}
+.rt-body{display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.rt-name{color:var(--text);font-weight:600;font-size:.88rem}
+.rt-desc{color:var(--text2);font-size:.76rem;line-height:1.5}
+/* FOOTER */
+.footer{position:relative;z-index:2;background:#030303;border-top:1px solid rgba(255,255,255,.07);padding:48px 0 24px}
+.footer .container{max-width:1280px;margin:0 auto;padding:0 32px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-logo{font-size:17px;font-weight:700;margin-bottom:10px;display:block;color:#f0f0f0}
+.footer-brand p{font-size:13px;color:rgba(255,255,255,.28);line-height:1.6;margin:0}
+.footer-email{display:inline-block;margin-top:8px;font-size:13px;font-weight:500;color:rgba(139,132,255,.9);text-decoration:none;transition:color .2s}
+.footer-email:hover{color:#a5b4fc}
+.footer-col h4{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.55);margin-bottom:14px}
+.footer-col a{display:block;color:rgba(255,255,255,.28);font-size:13px;padding:4px 0;transition:color .2s;text-decoration:none}
+.footer-col a:hover{color:#fff}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-top:1px solid rgba(255,255,255,.07);padding-top:20px;font-size:12px;color:rgba(255,255,255,.18)}
+.footer-bottom p{color:rgba(255,255,255,.18);font-size:12px;margin:0}
+.footer-social{display:flex;align-items:center;gap:10px}
+.footer-social a{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);transition:all .2s;text-decoration:none}
+.footer-social a:hover{color:#fff;border-color:rgba(139,132,255,.55);background:rgba(139,132,255,.12)}
+.footer-social svg{width:15px;height:15px}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;gap:24px}}
+@media(max-width:480px){.footer-grid{grid-template-columns:1fr}.footer-bottom{justify-content:center}}
+/* THEME TOGGLE */
+#qtool-theme-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#e4e4e7;cursor:pointer;transition:background .2s,border-color .2s,color .2s;flex:none;line-height:1}
+#qtool-theme-btn:hover{background:rgba(99,91,255,.18);border-color:rgba(99,91,255,.45);color:#fff}
+#qtool-theme-btn svg{width:16px;height:16px;display:block}
+#qtool-theme-btn .icon-sun{display:block}
+#qtool-theme-btn .icon-moon{display:none}
+html[data-theme="light"] #qtool-theme-btn .icon-sun{display:none}
+html[data-theme="light"] #qtool-theme-btn .icon-moon{display:block}
+html[data-theme="light"]{filter:invert(1) hue-rotate(180deg);background:#fff}
+html[data-theme="light"] img,html[data-theme="light"] video,html[data-theme="light"] canvas,html[data-theme="light"] iframe{filter:invert(1) hue-rotate(180deg)}
+/* RESPONSIVE CALC */
+@media(max-width:767px){
+.calc-stand,.calc-sci{width:100%;float:none}
+.calc-stand div,.calc-sci div{gap:4px;margin-bottom:4px}
+.scinm,.sciop,.scifunc,.scieq{height:42px;font-size:.9rem;border-radius:8px}
+#sciOutPut{font-size:2rem}
+#sciInPut{font-size:.85rem}
+.hero h1{font-size:1.6rem}
+.scihistorybox{margin:.5rem 0 .8rem;padding:.5rem .7rem}
+#scihistory{max-height:none;overflow-y:visible}
+}
+@media(min-width:768px){
+#calcWrap{max-width:760px}
+.calc-sci{float:left;width:44%;padding-right:6px}
+.calc-stand{float:right;width:56%;padding-left:6px}
+.calc-stand div,.calc-sci div{gap:6px;margin-bottom:6px}
+.scinm,.sciop,.scifunc,.scieq{height:50px;font-size:1.05rem}
+}
+@media(max-width:640px){.qtool-links a:not(.nav-cta){display:none}}
+/* VOICE */
+.card-tools{position:absolute;top:8px;right:10px;display:flex;align-items:center;gap:2px}
+.speaker-btn{position:static;background:none;border:none;color:var(--text2);cursor:pointer;padding:6px 8px;border-radius:8px;transition:color .2s,background .2s;font-size:1.1rem;line-height:1}
+.speaker-btn:hover{color:var(--primary);background:rgba(0,212,255,.08)}
+.speaker-btn.muted{opacity:.45}
+.speaker-btn.active{color:var(--primary)}
+.voice-mic-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.7rem;margin-top:.8rem;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;color:var(--accent);font-family:'Inter',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.voice-mic-btn:hover{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.35)}
+.voice-mic-btn.listening{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.35);color:#ef4444;animation:voice-pulse 1.5s ease-in-out infinite}
+.voice-mic-btn.listening .mic-icon{animation:voice-shake .4s ease-in-out infinite}
+@keyframes voice-pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.2)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
+@keyframes voice-shake{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+.mic-icon{font-size:1.2rem;line-height:1}
+.voice-status{text-align:center;font-size:.8rem;color:var(--text2);min-height:1.2em;margin-top:.3rem}
+.no-voice-support{display:none!important}
+#calcWrap{max-width:600px;margin:0 auto}
+.clear{clear:both}
+</style>
+</head>
+<body>
+
+<nav class="qtool-nav" id="nav">
+  <div class="qtool-nav-inner">
+    <a href="https://qtool.io" class="qtool-logo">Q<span>Tool</span></a>
+    <button class="qtool-burger" type="button" aria-label="Toggle navigation" onclick="this.parentNode.querySelector('.qtool-links').classList.toggle('open')">&#9776;</button>
+    <div class="qtool-links">
+      <a href="https://qtool.io">Home</a>
+      <a href="https://fincalc.qtool.io" target="_blank" rel="noopener">FinanceCalc</a>
+      <a href="https://stock.qtool.io/" target="_blank" rel="noopener">StockCalc</a>
+      <a href="https://tax.qtool.io" target="_blank" rel="noopener">TaxCalc</a>
+      <a href="https://img.qtool.io" target="_blank" rel="noopener">IMGtools</a>
+      <a href="https://pdf.qtool.io" target="_blank" rel="noopener">PDFtools</a>
+      <a href="https://qtool.io/blog">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>Scientific Calculator</h1>
+  <p>Use your keyboard or click the buttons. Calculation history included.</p>
+</section>
+
+<div class="tool-wrap">
+  <div class="card" data-anim style="position:relative">
+    <h3><span>&#128424;</span> Calculator</h3>
+    <div class="card-tools">
+      <button class="speaker-btn" id="soundToggleBtn" onclick="toggleSound()" title="Key sound: ON — click to mute" aria-label="Toggle key sound">&#128266;</button>
+    </div>
+    <div id="calcWrap">
+      <div id="sciPut">
+        <div id="sciInPut">&nbsp;</div>
+        <div id="sciOutPut">0</div>
+      </div>
+      <div class="calc-stand">
+        <div>
+          <span onclick="r(7)" class="scinm">7</span>
+          <span onclick="r(8)" class="scinm">8</span>
+          <span onclick="r(9)" class="scinm">9</span>
+          <span onclick="r('+')" class="sciop">+</span>
+          <span onclick="r('bk')" class="sciop">Back</span>
+        </div>
+        <div>
+          <span onclick="r(4)" class="scinm">4</span>
+          <span onclick="r(5)" class="scinm">5</span>
+          <span onclick="r(6)" class="scinm">6</span>
+          <span onclick="r('-')" class="sciop">&ndash;</span>
+          <span onclick="r('ans')" class="sciop">Ans</span>
+        </div>
+        <div>
+          <span onclick="r(1)" class="scinm">1</span>
+          <span onclick="r(2)" class="scinm">2</span>
+          <span onclick="r(3)" class="scinm">3</span>
+          <span onclick="r('*')" class="sciop">&#215;</span>
+          <span onclick="r('M+')" class="sciop">M+</span>
+        </div>
+        <div>
+          <span onclick="r(0)" class="scinm">0</span>
+          <span onclick="r('.')" class="scinm">.</span>
+          <span onclick="r('EXP')" class="sciop">EXP</span>
+          <span onclick="r('/')" class="sciop">/</span>
+          <span onclick="r('M-')" class="sciop">M-</span>
+        </div>
+        <div>
+          <span onclick="r('+/-')" class="sciop">&#177;</span>
+          <span onclick="r('RND')" class="sciop">RND</span>
+          <span onclick="r('C')" class="scieq calc-key-ac">AC</span>
+          <span onclick="r('=')" class="scieq">=</span>
+          <span onclick="r('MR')" class="sciop" id="scimrc">MR</span>
+        </div>
+      </div>
+      <div class="calc-sci">
+        <div>
+          <span onclick="r('sin')" class="scifunc">sin</span>
+          <span onclick="r('cos')" class="scifunc">cos</span>
+          <span onclick="r('tan')" class="scifunc">tan</span>
+          <span class="scird">
+            <label for="scirdsettingd"><input id="scirdsettingd" type="radio" name="scirdsetting" value="deg" onclick="cnDegreeRadians='degree';" checked><b>Deg</b></label>
+            <label for="scirdsettingr"><input id="scirdsettingr" type="radio" name="scirdsetting" value="rad" onclick="cnDegreeRadians='radians';"><b>Rad</b></label>
+          </span>
+        </div>
+        <div>
+          <span onclick="r('asin')" class="scifunc">sin<sup>-1</sup></span>
+          <span onclick="r('acos')" class="scifunc">cos<sup>-1</sup></span>
+          <span onclick="r('atan')" class="scifunc">tan<sup>-1</sup></span>
+          <span onclick="r('pi')" class="scifunc">&#960;</span>
+          <span onclick="r('e')" class="scifunc">e</span>
+        </div>
+        <div>
+          <span onclick="r('pow')" class="scifunc">x<sup>y</sup></span>
+          <span onclick="r('x3')" class="scifunc">x<sup>3</sup></span>
+          <span onclick="r('x2')" class="scifunc">x<sup>2</sup></span>
+          <span onclick="r('ex')" class="scifunc">e<sup>x</sup></span>
+          <span onclick="r('10x')" class="scifunc">10<sup>x</sup></span>
+        </div>
+        <div>
+          <span onclick="r('apow')" class="scifunc"><sup>y</sup>&#8730;x</span>
+          <span onclick="r('3x')" class="scifunc"><sup>3</sup>&#8730;x</span>
+          <span onclick="r('sqrt')" class="scifunc">&#8730;x</span>
+          <span onclick="r('ln')" class="scifunc">ln</span>
+          <span onclick="r('log')" class="scifunc">log</span>
+        </div>
+        <div>
+          <span onclick="r('(')" class="scifunc">(</span>
+          <span onclick="r(')')" class="scifunc">)</span>
+          <span onclick="r('1/x')" class="scifunc">1/x</span>
+          <span onclick="r('pc')" class="scifunc">%</span>
+          <span onclick="r('n!')" class="scifunc">n!</span>
+        </div>
+      </div>
+      <div class="clear"></div>
+    </div>
+    <div class="scihistorybox">
+      <div class="scihistorytitle"><span>Last 20 calculations (cleared on refresh)</span><h3>History</h3></div>
+      <div id="scihistory"></div>
+    </div>
+    <button class="voice-mic-btn" id="voiceMicBtn" onclick="toggleVoice()" title="Voice input — speak your calculation">
+      <span class="mic-icon">&#127908;</span>
+      <span id="voiceMicLabel">Voice Input</span>
+    </button>
+    <div class="voice-status" id="voiceStatus"></div>
+  </div>
+
+  <div class="card" data-anim style="margin-top:1.5rem">
+    <h3><span>&#9000;</span> Key Reference</h3>
+    <div class="key-ref">
+      <p><strong>AC</strong> All Clear &nbsp; <strong>M+</strong> Memory Add &nbsp; <strong>M-</strong> Memory Subtract &nbsp; <strong>MR</strong> Memory Recall &nbsp; <strong>Back</strong> Backspace &nbsp; <strong>Ans</strong> Last Answer &nbsp; <strong>RND</strong> Random Number &nbsp; <strong>EXP</strong> Power of 10</p>
+      <p style="margin-top:.5rem"><strong>sin</strong> Sine &nbsp; <strong>cos</strong> Cosine &nbsp; <strong>tan</strong> Tangent &nbsp; <strong>ln</strong> Natural Log &nbsp; <strong>log</strong> Log base 10 &nbsp; <strong>&#8730;x</strong> Square Root &nbsp; <strong>x<sup>2</sup></strong> Square &nbsp; <strong>x<sup>y</sup></strong> Power &nbsp; <strong>n!</strong> Factorial &nbsp; <strong>&#960;</strong> Pi &nbsp; <strong>e</strong> Euler's Number</p>
+    </div>
+  </div>
+
+  <div class="card" data-anim style="margin-top:1.5rem">
+    <h3><span>&#9000;</span> Keyboard Shortcuts</h3>
+    <div class="key-ref">
+      <p><strong>0-9</strong> Numbers &nbsp; <strong>+ - * /</strong> Operators &nbsp; <strong>. </strong> Decimal &nbsp; <strong>Enter</strong> Equals &nbsp; <strong>Backspace / Delete</strong> Erase &nbsp; <strong>Esc</strong> or <strong>Ctrl+Backspace</strong> Clear All</p>
+      <p style="margin-top:.5rem"><strong>S</strong> sin &nbsp; <strong>C</strong> cos &nbsp; <strong>T</strong> tan &nbsp; <strong>L</strong> ln &nbsp; <strong>P</strong> &#960; &nbsp; <strong>E</strong> e &nbsp; <strong>A</strong> Ans &nbsp; <strong>Alt+C</strong> Clear All</p>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-item">
+    <div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Is this calculator completely free?</div>
+    <div class="faq-a">Yes, this calculator is 100% free with no signup required. It runs entirely in your browser — your calculations never leave your device.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Can I use my keyboard with this calculator?</div>
+    <div class="faq-a">Yes! Use number keys, operators (+, -, *, /), Enter for equals, Backspace to delete, Esc or Ctrl+Backspace to clear. Also supports S for sin, C for cos, T for tan, L for ln, P for pi, and E for Euler's number.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Is my data private?</div>
+    <div class="faq-a">Absolutely. All calculations happen locally in your browser using JavaScript. No data is sent to any server. Your calculations remain completely private.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="this.parentNode.classList.toggle('open')">Does it work on mobile devices?</div>
+    <div class="faq-a">Yes, the calculator is fully responsive and works on phones, tablets, and desktop browsers. No app installation required.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="this.parentNode.classList.toggle('open')">What is the difference between Deg and Rad mode?</div>
+    <div class="faq-a">Deg (Degree) mode uses degrees (0-360°) for trigonometric functions. Rad (Radian) mode uses radians (0-2π). Choose based on the unit of your angles.</div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Need more tools?</h2>
+  <p>Explore the full QTool.io suite — text, image, finance, developer tools and more.</p>
+  <a href="https://qtool.io" class="cta-btn">Explore QTool.io</a>
+</section>
+
+<!-- Related Tools -->
+<section class="related-tools">
+<h2 class="rt-title">Related Tools</h2>
+<div class="rt-grid">
+  <a class="rt-card" href="https://fincalc.qtool.io" target="_blank" rel="noopener">
+    <span class="rt-ico">&#128176;</span>
+    <span class="rt-body">
+      <span class="rt-name">FinanceCalc</span>
+      <span class="rt-desc">Loan, mortgage, interest and financial calculations</span>
+    </span>
+  </a>
+  <a class="rt-card" href="https://stock.qtool.io" target="_blank" rel="noopener">
+    <span class="rt-ico">&#128200;</span>
+    <span class="rt-body">
+      <span class="rt-name">StockCalc</span>
+      <span class="rt-desc">Stock returns, portfolio performance and investment analysis</span>
+    </span>
+  </a>
+  <a class="rt-card" href="https://tax.qtool.io" target="_blank" rel="noopener">
+    <span class="rt-ico">&#128178;</span>
+    <span class="rt-body">
+      <span class="rt-name">TaxCalc</span>
+      <span class="rt-desc">Tax estimation, withholding and deduction calculator</span>
+    </span>
+  </a>
+  <a class="rt-card" href="https://qtool.io/text-analyzer.html" target="_blank" rel="noopener">
+    <span class="rt-ico">&#9997;</span>
+    <span class="rt-body">
+      <span class="rt-name">Text Analyzer</span>
+      <span class="rt-desc">Word count, readability scores, keyword density analysis</span>
+    </span>
+  </a>
+  <a class="rt-card" href="https://qtool.io/password-generator.html" target="_blank" rel="noopener">
+    <span class="rt-ico">&#128272;</span>
+    <span class="rt-body">
+      <span class="rt-name">Password Generator</span>
+      <span class="rt-desc">Generate strong, secure passwords instantly</span>
+    </span>
+  </a>
+  <a class="rt-card" href="https://qtool.io/json-formatter.html" target="_blank" rel="noopener">
+    <span class="rt-ico">{ }</span>
+    <span class="rt-body">
+      <span class="rt-name">JSON Formatter</span>
+      <span class="rt-desc">Format, validate and beautify JSON data</span>
+    </span>
+  </a>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="footer-logo">QTool.io</span>
+        <p>Free online tools for everyday tasks — text, image, finance, math, developer utilities and more. Private, fast and no signup required.</p>
+        <a class="footer-email" href="mailto:contact@qtool.io">Email: contact@qtool.io</a>
+      </div>
+      <div class="footer-col">
+        <h4>Popular Tools</h4>
+        <a href="https://qtool.io/json-formatter.html">JSON Formatter</a>
+        <a href="https://qtool.io/password-generator.html">Password Generator</a>
+        <a href="https://qtool.io/image-compressor.html">Image Compressor</a>
+        <a href="https://qtool.io/regex-tester.html">Regex Tester</a>
+        <a href="https://qtool.io/color-palette.html">Color Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Calculator Tools</h4>
+        <a href="https://calc.qtool.io">Scientific Calculator</a>
+        <a href="https://fincalc.qtool.io">Finance Calculator</a>
+        <a href="https://stock.qtool.io">Stock Calculator</a>
+        <a href="https://tax.qtool.io">Tax Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <a href="https://qtool.io">QTool.io</a>
+        <a href="https://qtool.io/blog">Blog</a>
+        <a href="https://dev.qtool.io" target="_blank" rel="noopener">IT-Tools</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 QTool.io. All rights reserved.</p>
+      <div class="footer-social">
+        <a href="https://github.com/qtool-io" target="_blank" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg></a>
+        <a href="https://twitter.com/qtool_io" target="_blank" rel="noopener" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="static/js/jisuan123.js"></script>
+<script>
+/* Intersection Observer for card animations */
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('[data-anim]').forEach(el => obs.observe(el));
+
+/* VOICE INPUT */
+var _SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+var _recog=null,_isListening=false;
+function _normNum(t){
+  t=t.toLowerCase().replace(/\b(zero|oh)\b/g,'0').replace(/\b(one)\b/g,'1').replace(/\b(two|too|to)\b/g,'2').replace(/\b(three)\b/g,'3').replace(/\b(four|for)\b/g,'4').replace(/\b(five)\b/g,'5').replace(/\b(six)\b/g,'6').replace(/\b(seven)\b/g,'7').replace(/\b(eight|ate)\b/g,'8').replace(/\b(nine)\b/g,'9').replace(/\b(ten)\b/g,'10').replace(/\b(eleven)\b/g,'11').replace(/\b(twelve)\b/g,'12').replace(/\b(thirteen)\b/g,'13').replace(/\b(fourteen|forteen)\b/g,'14').replace(/\b(fifteen)\b/g,'15').replace(/\b(sixteen)\b/g,'16').replace(/\b(seventeen)\b/g,'17').replace(/\b(eighteen)\b/g,'18').replace(/\b(nineteen)\b/g,'19');
+  var tw={twenty:2,thirty:3,forty:4,fifty:5,sixty:6,seventy:7,eighty:8,ninety:9};
+  for(var w in tw){var rx=new RegExp('\\b'+w+'\\s*(\\d+)?\\b','g');t=t.replace(rx,function(_,d){return tw[w]*10+(d?parseInt(d):0)});}
+  t=t.replace(/(\d+)\s*hundred/g,function(_,n){return parseInt(n)*100}).replace(/(\d+)\s+thousand/g,function(_,n){return parseInt(n)*1000}).replace(/(\d+)\s*million/g,function(_,n){return parseInt(n)*1000000}).replace(/(\d+)\s*billion/g,function(_,n){return parseInt(n)*1000000000});
+  return t.replace(/\s+/g,' ').trim();
+}
+function _parseVoice(raw){
+  var t=_normNum(raw);
+  t=t.replace(/\bsquare root of\b/gi,'sqrt').replace(/\bcube root of\b/gi,'3x').replace(/\binverse of\b/gi,'1/x');
+  t=t.replace(/\bto the power of\b/gi,'pow').replace(/\bcubed\b/gi,'x3').replace(/\bsquared\b/gi,'x2');
+  t=t.replace(/\bplus\b/gi,'+').replace(/\bminus\b/gi,'-').replace(/\btimes\b/gi,'*').replace(/\bmultiplied by\b/gi,'*').replace(/\bdivided by\b/gi,'/').replace(/\bover\b/gi,'1/');
+  t=t.replace(/\bsine of\b/gi,'sin').replace(/\bcosine of\b/gi,'cos').replace(/\btangent of\b/gi,'tan');
+  t=t.replace(/\bsin\b/gi,'sin').replace(/\bcos\b/gi,'cos').replace(/\btan\b/gi,'tan').replace(/\bln\b/gi,'ln').replace(/\blog\b/gi,'log');
+  t=t.replace(/\bpi\b/gi,'pi').replace(/\beuler\b/gi,'e').replace(/\bfactorial\b/gi,'n!').replace(/\bpercent\b/gi,'pc').replace(/\bnegative\b/gi,'neg');
+  t=t.replace(/\bequals?\b/gi,'=').replace(/\bwhat is\b/gi,'').replace(/\bcalculate\b/gi,'').replace(/\bcompute\b/gi,'').replace(/\bdegrees?\b/gi,'');
+  return t.trim();
+}
+function _voiceResult(text){
+  var parts=_parseVoice(text).split(/\s+/).filter(function(p){return p.length>0});
+  if(!parts.length)return;
+  var ops=['+','-','*','/','=','pow','apow','x2','x3','3x','sqrt','sin','cos','tan','asin','acos','atan','ln','log','n!','pc','1/x','pi','e','neg','(',')','RND','EXP','C','bk','MR','M+','M-','ans'];
+  r('C');
+  parts.forEach(function(p){
+    var n=Number(p);
+    if(!isNaN(n)&&p!==''){r(n);return;}
+    if(ops.indexOf(p)>=0){r(p);return;}
+    if(p.indexOf('/')===0&&p.length>1){var num=parseFloat(p.substring(1));if(!isNaN(num)){r(num);r('1/x');return;}}
+    var num=parseFloat(p);if(!isNaN(num))r(num);
+  });
+}
+if(_SR){
+  _recog=new _SR();
+  _recog.continuous=false;
+  _recog.interimResults=false;
+  _recog.lang='en-US';
+  _recog.onresult=function(ev){
+    var text=ev.results[0][0].transcript;
+    var vs=document.getElementById('voiceStatus');
+    vs.textContent='Heard: "'+text+'"';
+    try{_voiceResult(text);}catch(e){vs.textContent='Error processing voice input.';}
+  };
+  _recog.onerror=function(ev){
+    document.getElementById('voiceStatus').textContent='Error: '+ev.error;
+    _isListening=false;_updateMicUI();
+  };
+  _recog.onend=function(){_isListening=false;_updateMicUI();};
+}
+function _updateMicUI(){
+  var btn=document.getElementById('voiceMicBtn');
+  var label=document.getElementById('voiceMicLabel');
+  if(_isListening){btn.classList.add('listening');label.textContent='Listening...';}
+  else{btn.classList.remove('listening');label.textContent='Voice Input';}
+}
+function toggleVoice(){
+  if(!_recog){document.getElementById('voiceStatus').textContent='Voice input not supported in this browser.';return;}
+  if(_isListening){_recog.stop();}else{try{_recog.start();_isListening=true;_updateMicUI();document.getElementById('voiceStatus').textContent='Say a calculation, e.g. "five plus three"';}catch(e){_isListening=false;_updateMicUI();}}
+}
+if(!_SR){var _mb=document.getElementById('voiceMicBtn');if(_mb)_mb.classList.add('no-voice-support');}
+
+/* BUTTON / KEY SOUND (Web Audio click) + sound toggle */
+var _soundOn=localStorage.getItem('calcSound')!=='off';
+function _syncSoundBtn(){
+  var b=document.getElementById('soundToggleBtn');
+  if(!b)return;
+  b.innerHTML=_soundOn?'&#128266;':'&#128263;';
+  b.title=_soundOn?'Key sound: ON — click to mute':'Key sound: OFF — click to enable';
+  b.classList.toggle('muted',!_soundOn);
+  b.classList.toggle('active',_soundOn);
+}
+function toggleSound(){_soundOn=!_soundOn;localStorage.setItem('calcSound',_soundOn?'on':'off');_syncSoundBtn();}
+_syncSoundBtn();
+var _actx=null;
+function _audioCtx(){
+  if(!_actx){
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return null;
+    try{_actx=new AC();}catch(e){return null;}
+  }
+  if(_actx.state==='suspended'){try{_actx.resume();}catch(e){}}
+  return _actx;
+}
+/* crisp click per key type: clean short sine blip + bright fast noise tick */
+function _tone(type){
+  var ctx=_audioCtx();if(!ctx)return;
+  var t0=ctx.currentTime;
+  var o=ctx.createOscillator();
+  var g=ctx.createGain();
+  var f=880,dur=.035,v=.085;
+  switch(type){
+    case 'num':f=880;dur=.035;v=.085;break;        /* A5 */
+    case 'op':f=1108.73;dur=.04;v=.095;break;      /* C#6 */
+    case 'func':f=1318.51;dur=.04;v=.085;break;    /* E6 */
+    case 'eq':f=880;dur=.1;v=.10;break;            /* A5 -> D6 up-glide */
+    case 'ac':f=554.37;dur=.11;v=.10;break;        /* C#5 -> G#4 down-glide */
+    case 'bk':f=987.77;dur=.03;v=.085;break;       /* B5 */
+  }
+  o.type='sine';
+  o.frequency.setValueAtTime(f,t0);
+  if(type==='eq')o.frequency.exponentialRampToValueAtTime(f*1.335,t0+dur);
+  else if(type==='ac')o.frequency.exponentialRampToValueAtTime(Math.max(220,f*.75),t0+dur);
+  else o.frequency.exponentialRampToValueAtTime(Math.max(300,f*.9),t0+dur);
+  g.gain.setValueAtTime(.0001,t0);
+  g.gain.exponentialRampToValueAtTime(v,t0+.002);       /* fast attack */
+  g.gain.exponentialRampToValueAtTime(.0008,t0+dur);    /* short sharp decay */
+  o.connect(g);g.connect(ctx.destination);
+  o.start(t0);o.stop(t0+dur+.015);
+  /* bright 8ms noise tick — the actual "click" (like a mechanical switch) */
+  var n=Math.floor(ctx.sampleRate*.008);
+  var buf=ctx.createBuffer(1,n,ctx.sampleRate);
+  var d=buf.getChannelData(0);
+  for(var i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
+  var src=ctx.createBufferSource();src.buffer=buf;
+  var hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=4200;
+  var ng=ctx.createGain();
+  ng.gain.setValueAtTime(.07*((type==='eq'||type==='ac')?1.3:1),t0);
+  ng.gain.exponentialRampToValueAtTime(.0001,t0+.008);
+  src.connect(hp);hp.connect(ng);ng.connect(ctx.destination);
+  src.start(t0);src.stop(t0+.01);
+}
+function playSound(type){if(_soundOn)_tone(type);}
+function playClick(el){
+  if(el.classList.contains('scieq')){
+    playSound(el.classList.contains('calc-key-ac')?'ac':'eq');
+  }else if(el.classList.contains('scinm')){
+    playSound('num');
+  }else if(el.classList.contains('sciop')){
+    var t=(el.textContent||'').replace(/\s/g,'').toLowerCase();
+    playSound((t==='back'||t==='bk')?'bk':'op');
+  }else{
+    playSound('func');
+  }
+}
+function _vibrate(){
+  if(!_soundOn)return;
+  if(navigator.vibrate&&('ontouchstart' in window||navigator.maxTouchPoints>0)){
+    try{navigator.vibrate(10);}catch(e){}
+  }
+}
+document.getElementById('calcWrap').addEventListener('click',function(ev){
+  var btn=ev.target.closest('.scinm,.sciop,.scifunc,.scieq');
+  if(btn){playClick(btn);_vibrate();}
+});
+/* keyboard clicks also play the click sound (mirrors jisuan123.js key mapping) */
+document.addEventListener('keydown',function(e){
+  if(!_soundOn||e.ctrlKey||e.metaKey||e.altKey)return;
+  var k=e.key,s;
+  if(/^[0-9]$/.test(k)||k==='.')s='num';
+  else if(k==='+'||k==='-'||k==='*'||k==='/')s='op';
+  else if(k==='Enter'||k==='=')s='eq';
+  else if(k==='Backspace'||k==='Delete')s='bk';
+  else if(k==='Escape')s='ac';
+  else if(k==='('||k===')')s='func';
+  else if(e.shiftKey){
+    if(k==='^'||k==='%'||k==='!')s='func';
+  }
+  else if(/^[a-zA-Z]$/.test(k)){
+    var low=k.toLowerCase();
+    if(low==='s'||low==='c'||low==='t'||low==='l'||low==='p'||low==='e'||low==='a')s='func';
+    else if(low==='b')s='bk';
+  }
+  if(s!==undefined){playSound(s);_vibrate();}
+});
+
+/* Safer clear shortcuts: Ctrl+Backspace / Ctrl+Delete / Alt+C (avoids misfiring cos) */
+var _origKeydown=document.onkeydown;
+document.onkeydown=function(e){
+  e=e||window.event;
+  var kc=e.keyCode||0;
+  var t=e.target||e.srcElement;
+  var editable=t&&(
+    (t.tagName==='INPUT'&&/^(text|number|search|email|password|url|tel|date|time)$/i.test(t.type||''))||
+    t.tagName==='TEXTAREA'||
+    t.isContentEditable
+  );
+  var clearShortcut=(e.ctrlKey||e.metaKey)&&(kc===8||kc===46)||e.altKey&&(kc===67||e.key==='c'||e.key==='C');
+  if(clearShortcut){
+    if(e.preventDefault)e.preventDefault();
+    r('C');
+    playSound('ac');
+    return;
+  }
+  /* stop Backspace/Delete from triggering the browser "go back" navigation */
+  if(!editable&&(kc===8||kc===46)){
+    if(e.preventDefault)e.preventDefault();
+  }
+  if(_origKeydown)return _origKeydown.call(this,e);
+};
+
+/* LAYOUT: auto landscape on desktop, portrait on mobile */
+(function(){
+  function detect(){
+    var html=document.documentElement;
+    var ua=navigator.userAgent;
+    var isMobile=/Android|iPhone|iPad|iPod|Mobile|Windows Phone|webOS|HarmonyOS/i.test(ua)
+      || (window.matchMedia&&matchMedia('(hover:none) and (pointer:coarse)').matches)
+      || window.innerWidth<=820;
+    html.classList.toggle('is-mobile',isMobile);
+    html.classList.toggle('is-desktop',!isMobile);
+    var landscape=window.innerWidth>window.innerHeight;
+    html.classList.toggle('landscape',landscape);
+    html.classList.toggle('portrait',!landscape);
+  }
+  detect();
+  var _ot;
+  window.addEventListener('resize',function(){clearTimeout(_ot);_ot=setTimeout(detect,150);});
+  window.addEventListener('orientationchange',detect);
+})();
+</script>
+<script>
+/* QTOOL-THEME-JS */
+(function(){
+  try{
+    var KEY='qtool_theme';
+    var html=document.documentElement;
+    function apply(t){
+      if(t==='light'){html.setAttribute('data-theme','light');}
+      else{html.removeAttribute('data-theme');}
+    }
+    try{apply(localStorage.getItem(KEY));}catch(e){}
+    function mount(){
+      if(document.getElementById('qtool-theme-btn')){return;}
+      var host=document.querySelector('.qtool-links');
+      if(!host){return;}
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.id='qtool-theme-btn';
+      btn.setAttribute('aria-label','Toggle light/dark mode');
+      btn.innerHTML='<svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+      btn.addEventListener('click',function(){
+        var cur=html.getAttribute('data-theme');
+        var next=(cur==='light')?'dark':'light';
+        apply(next);
+        try{localStorage.setItem(KEY,next);}catch(e){}
+      });
+      host.appendChild(btn);
+    }
+    if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',mount);}
+    else{mount();}
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
