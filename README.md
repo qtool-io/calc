@@ -33,7 +33,7 @@ Follow these steps to run the project locally:
 
 ```bash
 # Clone the repository
-git clone https://github.com/qtoolio/clac-tool.git
+git clone https://github.com/qtool-io/clac-tool.git
 cd clac-tool
 
 # Install dependencies
